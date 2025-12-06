@@ -122,8 +122,10 @@ func _on_slider_changed(value: float, param_name: String, value_label: Label) ->
 	match param_name:
 		"battlefield_size_x":
 			GameConfig.battlefield_size.x = value
+			_update_battlefield_size()
 		"battlefield_size_y":
 			GameConfig.battlefield_size.y = value
+			_update_battlefield_size()
 		"footman_hp":
 			_update_unit_hp("footman", GameConfig.footman_hp, value)
 			GameConfig.footman_hp = value
@@ -196,3 +198,23 @@ func _update_existing_units(unit_type: String, stat: String, value: float) -> vo
 					unit.attack_delay = value
 				"attack_range":
 					unit.attack_range = value
+
+func _update_battlefield_size() -> void:
+	var size_x = GameConfig.battlefield_size.x
+	var size_y = GameConfig.battlefield_size.y
+
+	var ground = get_tree().root.get_node_or_null("Main/Battlefield/Ground")
+	if not ground:
+		return
+
+	# Update mesh
+	var mesh_instance = ground.get_node_or_null("MeshInstance3D") as MeshInstance3D
+	if mesh_instance and mesh_instance.mesh is BoxMesh:
+		var box_mesh = mesh_instance.mesh as BoxMesh
+		box_mesh.size = Vector3(size_x, 0.2, size_y)
+
+	# Update collision shape
+	var collision_shape = ground.get_node_or_null("CollisionShape3D") as CollisionShape3D
+	if collision_shape and collision_shape.shape is BoxShape3D:
+		var box_shape = collision_shape.shape as BoxShape3D
+		box_shape.size = Vector3(size_x, 0.2, size_y)

@@ -34,6 +34,16 @@ extends Node
 @export var archer_attack_delay: float = 2.0
 
 # =============================================================================
+# UNIT STATS - FLYER (Eagle)
+# =============================================================================
+@export var flyer_hp: float = 60.0
+@export var flyer_speed: float = 5.0
+@export var flyer_damage: float = 18.0
+@export var flyer_attack_delay: float = 1.5
+@export var flyer_attack_range: float = 2.0  # Air-to-air/dive attack range
+@export var flyer_altitude: float = 4.0  # Height above ground
+
+# =============================================================================
 # PROJECTILE
 # =============================================================================
 @export var projectile_speed: float = 22.0
@@ -48,6 +58,7 @@ extends Node
 @export var footman_size: Vector3 = Vector3(0.8, 1.6, 0.8)
 @export var cavalry_size: Vector3 = Vector3(1.2, 1.4, 2.0)
 @export var archer_size: Vector3 = Vector3(0.7, 1.8, 0.7)
+@export var flyer_size: Vector3 = Vector3(1.0, 0.4, 1.2)  # Wide wingspan, flat body
 @export var projectile_size: Vector3 = Vector3(0.2, 0.2, 0.8)
 
 # =============================================================================
@@ -57,12 +68,14 @@ extends Node
 @export var team1_footman_color: Color = Color(0.3, 0.5, 0.9)  # Light blue
 @export var team1_cavalry_color: Color = Color(0.2, 0.3, 0.8)  # Blue
 @export var team1_archer_color: Color = Color(0.1, 0.2, 0.6)   # Dark blue
+@export var team1_flyer_color: Color = Color(0.5, 0.7, 1.0)    # Sky blue (eagle)
 @export var team1_projectile_color: Color = Color(0.4, 0.6, 1.0)
 
 # Team 2 - Red variants
 @export var team2_footman_color: Color = Color(0.9, 0.3, 0.3)  # Light red
 @export var team2_cavalry_color: Color = Color(0.8, 0.2, 0.2)  # Red
 @export var team2_archer_color: Color = Color(0.6, 0.1, 0.1)   # Dark red
+@export var team2_flyer_color: Color = Color(1.0, 0.6, 0.4)    # Orange-red (eagle)
 @export var team2_projectile_color: Color = Color(1.0, 0.4, 0.4)
 
 # =============================================================================
@@ -74,12 +87,14 @@ func get_unit_color(team: int, unit_type: String) -> Color:
 			"footman": return team1_footman_color
 			"cavalry": return team1_cavalry_color
 			"archer": return team1_archer_color
+			"flyer": return team1_flyer_color
 			"projectile": return team1_projectile_color
 	else:
 		match unit_type:
 			"footman": return team2_footman_color
 			"cavalry": return team2_cavalry_color
 			"archer": return team2_archer_color
+			"flyer": return team2_flyer_color
 			"projectile": return team2_projectile_color
 	return Color.WHITE
 
@@ -116,5 +131,15 @@ func get_unit_stats(unit_type: String) -> Dictionary:
 				"attack_delay": archer_attack_delay,
 				"attack_range": get_projectile_max_range(),
 				"size": archer_size
+			}
+		"flyer":
+			return {
+				"hp": flyer_hp,
+				"speed": flyer_speed,
+				"damage": flyer_damage,
+				"attack_delay": flyer_attack_delay,
+				"attack_range": flyer_attack_range,
+				"size": flyer_size,
+				"altitude": flyer_altitude
 			}
 	return {}

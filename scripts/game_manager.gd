@@ -12,11 +12,12 @@ func _ready() -> void:
 	unit_scenes = {
 		"footman": preload("res://scenes/units/footman.tscn"),
 		"cavalry": preload("res://scenes/units/cavalry.tscn"),
-		"archer": preload("res://scenes/units/archer.tscn")
+		"archer": preload("res://scenes/units/archer.tscn"),
+		"flyer": preload("res://scenes/units/flyer.tscn")
 	}
 
 func spawn_random_unit(team: int) -> void:
-	var unit_types = ["footman", "cavalry", "archer"]
+	var unit_types = ["footman", "cavalry", "archer", "flyer"]
 	var random_type = unit_types[randi() % unit_types.size()]
 	spawn_unit(random_type, team)
 
@@ -33,7 +34,11 @@ func spawn_unit(unit_type: String, team: int) -> void:
 	if units_container:
 		units_container.add_child(unit)
 		# Set position after adding to tree
-		unit.global_position = _get_spawn_position(team)
+		var spawn_pos = _get_spawn_position(team)
+		# Flyers spawn at their altitude
+		if unit_type == "flyer":
+			spawn_pos.y = GameConfig.flyer_altitude
+		unit.global_position = spawn_pos
 	else:
 		push_error("Units container not found!")
 		unit.queue_free()

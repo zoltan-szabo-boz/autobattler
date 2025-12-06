@@ -26,6 +26,49 @@ func _check_for_targets() -> void:
 	elif global_position.distance_to(target.global_position) > attack_range:
 		# Current target out of range, look for closer one
 		_find_target()
+	elif target.unit_type != "flyer":
+		# If we're not targeting a flyer, check if there are flyers to prioritize
+		var enemy_flyers_group = "team_2_flyers" if team == 1 else "team_1_flyers"
+		var enemy_flyers = get_tree().get_nodes_in_group(enemy_flyers_group)
+		if not enemy_flyers.is_empty():
+			# Prioritize flyers - they're a threat to us!
+			_find_target()
+
+func _find_target() -> void:
+	var enemy_group = "team_2" if team == 1 else "team_1"
+	var enemies = get_tree().get_nodes_in_group(enemy_group)
+
+	if enemies.is_empty():
+		target = null
+		return
+
+	# Archers prioritize flying units (they're the counter to flyers)
+	var enemy_flyers: Array[BaseUnit] = []
+	var other_enemies: Array[BaseUnit] = []
+
+	for enemy in enemies:
+		if not is_instance_valid(enemy):
+			continue
+		var dist = global_position.distance_to(enemy.global_position)
+		if dist > attack_range:
+			continue
+		if enemy.unit_type == "flyer":
+			enemy_flyers.append(enemy)
+		else:
+			other_enemies.append(enemy)
+
+	# Priority 1: Enemy flyers in range
+	if not enemy_flyers.is_empty():
+		target = _get_closest_enemy(enemy_flyers)
+		return
+
+	# Priority 2: Any other enemy in range
+	if not other_enemies.is_empty():
+		target = _get_closest_enemy(other_enemies)
+		return
+
+	# Fallback: closest enemy (even if out of range, we'll move toward them)
+	target = _get_closest_enemy(enemies)
 
 func _move_towards_target(delta: float) -> void:
 	if not is_instance_valid(target):

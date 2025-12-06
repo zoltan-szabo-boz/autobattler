@@ -116,6 +116,10 @@ func _check_collision_engagement() -> void:
 	for enemy in enemies:
 		if not is_instance_valid(enemy):
 			continue
+		# Melee units can't engage airborne flyers
+		if unit_type in ["footman", "cavalry"] and enemy.unit_type == "flyer":
+			if enemy.is_flying():
+				continue
 		var dist = global_position.distance_to(enemy.global_position)
 		if dist <= attack_range * 1.5:  # Slightly larger than attack range for collision detection
 			# Switch target to this nearby enemy
@@ -131,11 +135,27 @@ func _find_target() -> void:
 		target = null
 		return
 
+	# Ground melee units can't target flying units (but CAN target landed flyers)
+	var targetable_enemies: Array = []
+	for enemy in enemies:
+		if not is_instance_valid(enemy):
+			continue
+		# Melee units (footman, cavalry) can't reach flyers that are airborne
+		if unit_type in ["footman", "cavalry"] and enemy.unit_type == "flyer":
+			# Check if the flyer is flying or landed
+			if enemy.is_flying():
+				continue  # Can't target airborne flyers
+		targetable_enemies.append(enemy)
+
+	if targetable_enemies.is_empty():
+		target = null
+		return
+
 	match targeting_mode:
 		TargetingMode.CLOSEST:
-			target = _get_closest_enemy(enemies)
+			target = _get_closest_enemy(targetable_enemies)
 		TargetingMode.FARTHEST:
-			target = _get_farthest_enemy(enemies)
+			target = _get_farthest_enemy(targetable_enemies)
 
 func _get_closest_enemy(enemies: Array) -> BaseUnit:
 	var closest: BaseUnit = null

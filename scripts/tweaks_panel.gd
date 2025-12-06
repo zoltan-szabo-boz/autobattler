@@ -57,6 +57,15 @@ func _build_ui() -> void:
 		{"name": "archer_aim_deviation", "label": "Aim Deviation", "min": 0, "max": 45, "step": 0.5, "value": GameConfig.archer_aim_deviation},
 	])
 
+	_add_section("Flyer", [
+		{"name": "flyer_hp", "label": "HP", "min": 10, "max": 500, "step": 10, "value": GameConfig.flyer_hp},
+		{"name": "flyer_speed", "label": "Speed", "min": 0.5, "max": 15, "step": 0.5, "value": GameConfig.flyer_speed},
+		{"name": "flyer_damage", "label": "Damage", "min": 1, "max": 100, "step": 1, "value": GameConfig.flyer_damage},
+		{"name": "flyer_attack_delay", "label": "Attack Delay", "min": 0.1, "max": 5, "step": 0.1, "value": GameConfig.flyer_attack_delay},
+		{"name": "flyer_attack_range", "label": "Attack Range", "min": 0.5, "max": 5, "step": 0.1, "value": GameConfig.flyer_attack_range},
+		{"name": "flyer_altitude", "label": "Altitude", "min": 2, "max": 10, "step": 0.5, "value": GameConfig.flyer_altitude},
+	])
+
 	_add_section("Projectile", [
 		{"name": "projectile_speed", "label": "Speed", "min": 5, "max": 60, "step": 1, "value": GameConfig.projectile_speed},
 		{"name": "projectile_gravity", "label": "Gravity", "min": 1, "max": 30, "step": 0.5, "value": GameConfig.projectile_gravity},
@@ -172,6 +181,24 @@ func _on_slider_changed(value: float, param_name: String, value_label: Label) ->
 			_update_existing_units("archer", "attack_delay", value)
 		"archer_aim_deviation":
 			GameConfig.archer_aim_deviation = value
+		"flyer_hp":
+			_update_unit_hp("flyer", GameConfig.flyer_hp, value)
+			GameConfig.flyer_hp = value
+		"flyer_speed":
+			GameConfig.flyer_speed = value
+			_update_existing_units("flyer", "speed", value)
+		"flyer_damage":
+			GameConfig.flyer_damage = value
+			_update_existing_units("flyer", "damage", value)
+		"flyer_attack_delay":
+			GameConfig.flyer_attack_delay = value
+			_update_existing_units("flyer", "attack_delay", value)
+		"flyer_attack_range":
+			GameConfig.flyer_attack_range = value
+			_update_existing_units("flyer", "attack_range", value)
+		"flyer_altitude":
+			GameConfig.flyer_altitude = value
+			_update_flyer_altitude(value)
 		"projectile_speed":
 			GameConfig.projectile_speed = value
 			_update_archer_range()
@@ -212,6 +239,13 @@ func _update_archer_range() -> void:
 	for unit in units:
 		if unit is BaseUnit and unit.unit_type == "archer":
 			unit.attack_range = new_range
+
+func _update_flyer_altitude(value: float) -> void:
+	# Update all existing flyers' altitude
+	var units = get_tree().get_nodes_in_group("flyers")
+	for unit in units:
+		if unit is FlyerUnit:
+			unit.altitude = value
 
 func _update_battlefield_size() -> void:
 	var size_x = GameConfig.battlefield_size.x

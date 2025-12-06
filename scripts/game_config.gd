@@ -20,7 +20,7 @@ extends Node
 # UNIT STATS - CAVALRY
 # =============================================================================
 @export var cavalry_hp: float = 80.0
-@export var cavalry_speed: float = 7.0
+@export var cavalry_speed: float = 6.0
 @export var cavalry_damage: float = 25.0
 @export var cavalry_attack_delay: float = 1.2
 @export var cavalry_attack_range: float = 1.8
@@ -37,11 +37,11 @@ extends Node
 # UNIT STATS - FLYER (Eagle)
 # =============================================================================
 @export var flyer_hp: float = 60.0
-@export var flyer_speed: float = 5.0
+@export var flyer_speed: float = 7.0
 @export var flyer_damage: float = 18.0
 @export var flyer_attack_delay: float = 1.5
 @export var flyer_attack_range: float = 2.0  # Air-to-air/dive attack range
-@export var flyer_altitude: float = 4.0  # Height above ground
+@export var flyer_altitude: float = 5.0  # Height above ground
 
 # =============================================================================
 # PROJECTILE

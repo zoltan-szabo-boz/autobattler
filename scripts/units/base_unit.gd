@@ -201,6 +201,10 @@ func _move_towards_target(delta: float) -> void:
 	var direction = (target.global_position - global_position).normalized()
 	direction.y = 0  # Keep movement on ground plane
 
+	# Apply friendly avoidance steering
+	var avoidance = _get_friendly_avoidance()
+	direction = (direction + avoidance).normalized()
+
 	velocity = direction * speed
 	move_and_slide()
 
@@ -216,6 +220,29 @@ func _move_towards_target(delta: float) -> void:
 	# Face target
 	if direction.length() > 0.01:
 		look_at(global_position + direction, Vector3.UP)
+
+func _get_friendly_avoidance() -> Vector3:
+	var avoidance := Vector3.ZERO
+	var avoidance_radius: float = 2.0  # Distance to start avoiding friendlies
+	var avoidance_strength: float = 1.5  # How strongly to avoid
+
+	var friendly_group = "team_%d" % team
+	var friendlies = get_tree().get_nodes_in_group(friendly_group)
+
+	for friendly in friendlies:
+		if friendly == self or not is_instance_valid(friendly):
+			continue
+
+		var to_friendly = friendly.global_position - global_position
+		to_friendly.y = 0
+		var dist = to_friendly.length()
+
+		if dist < avoidance_radius and dist > 0.01:
+			# Push away from friendly, stronger when closer
+			var push_strength = (avoidance_radius - dist) / avoidance_radius
+			avoidance -= to_friendly.normalized() * push_strength * avoidance_strength
+
+	return avoidance
 
 func _attack_target() -> void:
 	# Not moving while attacking

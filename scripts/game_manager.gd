@@ -41,6 +41,7 @@ func spawn_unit(unit_type: String, team: int) -> void:
 func _get_spawn_position(team: int) -> Vector3:
 	var half_size = GameConfig.battlefield_size / 2.0
 	var margin = GameConfig.spawn_margin
+	var min_separation: float = 1.5  # Minimum distance between units at spawn
 
 	var x: float
 	var z: float
@@ -48,13 +49,36 @@ func _get_spawn_position(team: int) -> Vector3:
 	if team == 1:
 		# Team 1 spawns on left edge (negative X)
 		x = -half_size.x + margin
-		z = randf_range(-half_size.y + margin, half_size.y - margin)
 	else:
 		# Team 2 spawns on right edge (positive X)
 		x = half_size.x - margin
-		z = randf_range(-half_size.y + margin, half_size.y - margin)
 
-	return Vector3(x, 0, z)
+	# Try to find a non-overlapping position
+	var max_attempts: int = 20
+	var best_position := Vector3(x, 0, randf_range(-half_size.y + margin, half_size.y - margin))
+
+	for attempt in range(max_attempts):
+		z = randf_range(-half_size.y + margin, half_size.y - margin)
+		var candidate := Vector3(x, 0, z)
+
+		# Check if this position overlaps with existing units
+		var is_clear := true
+		var units_container = get_tree().root.get_node_or_null("Main/Units")
+		if units_container:
+			for unit in units_container.get_children():
+				if unit is BaseUnit:
+					var dist = candidate.distance_to(unit.global_position)
+					if dist < min_separation:
+						is_clear = false
+						break
+
+		if is_clear:
+			return candidate
+
+	# If we couldn't find a clear spot, add a random offset to spread units out
+	best_position.x += randf_range(-1.0, 1.0)
+	best_position.z += randf_range(-1.0, 1.0)
+	return best_position
 
 func add_kill(team: int) -> void:
 	if team == 1:

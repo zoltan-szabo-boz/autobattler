@@ -44,6 +44,10 @@ func _move_towards_target(delta: float) -> void:
 	var direction = (target.global_position - global_position).normalized()
 	direction.y = 0
 
+	# Apply friendly avoidance steering
+	var avoidance = _get_friendly_avoidance()
+	direction = (direction + avoidance).normalized()
+
 	velocity = direction * speed
 	move_and_slide()
 

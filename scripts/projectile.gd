@@ -59,15 +59,35 @@ func launch_at_target(from: Vector3, to: Vector3) -> void:
 	if horizontal_dist < 0.1:
 		horizontal_dist = 0.1
 
-	var time_to_target = horizontal_dist / speed
-	var vy = (vertical_dist + 0.5 * gravity * time_to_target * time_to_target) / time_to_target
-
 	var horizontal_dir = Vector2(displacement.x, displacement.z).normalized()
 
+	# Solve ballistic trajectory equation to find launch angle
+	# Using the formula for projectile motion to hit a target at (horizontal_dist, vertical_dist)
+	var speed_sq = speed * speed
+	var g = gravity
+	var x = horizontal_dist
+	var y = vertical_dist
+
+	# Discriminant for the quadratic formula
+	var discriminant = speed_sq * speed_sq - g * (g * x * x + 2.0 * y * speed_sq)
+
+	var angle: float
+	if discriminant < 0:
+		# Target is out of range, use 45 degree angle (max range)
+		angle = PI / 4.0
+	else:
+		# Two solutions exist - use the lower angle (flatter trajectory) for accuracy
+		var sqrt_disc = sqrt(discriminant)
+		angle = atan((speed_sq - sqrt_disc) / (g * x))
+
+	# Calculate velocity components
+	var v_horizontal = speed * cos(angle)
+	var v_vertical = speed * sin(angle)
+
 	launch_velocity = Vector3(
-		horizontal_dir.x * speed,
-		vy,
-		horizontal_dir.y * speed
+		horizontal_dir.x * v_horizontal,
+		v_vertical,
+		horizontal_dir.y * v_horizontal
 	)
 
 	# Set gravity scale

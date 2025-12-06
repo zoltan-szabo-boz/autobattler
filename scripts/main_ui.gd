@@ -17,6 +17,8 @@ func _spawn_initial_units() -> void:
 	for i in range(5):
 		GameManager.spawn_random_unit(1)
 		GameManager.spawn_random_unit(2)
+		#GameManager.spawn_unit("archer", 1)
+		#GameManager.spawn_unit("archer", 2)
 
 func _unhandled_input(event: InputEvent) -> void:
 	# Keyboard shortcuts for quick testing (1 and 2 keys)

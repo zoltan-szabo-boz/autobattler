@@ -50,9 +50,9 @@ func _build_ui() -> void:
 
 	_add_section("Archer", [
 		{"name": "archer_hp", "label": "HP", "min": 10, "max": 500, "step": 10, "value": GameConfig.archer_hp},
+		{"name": "archer_speed", "label": "Speed", "min": 0, "max": 10, "step": 0.5, "value": GameConfig.archer_speed},
 		{"name": "archer_damage", "label": "Damage", "min": 1, "max": 100, "step": 1, "value": GameConfig.archer_damage},
 		{"name": "archer_attack_delay", "label": "Attack Delay", "min": 0.1, "max": 5, "step": 0.1, "value": GameConfig.archer_attack_delay},
-		{"name": "archer_attack_range", "label": "Attack Range", "min": 5, "max": 50, "step": 1, "value": GameConfig.archer_attack_range},
 		{"name": "archer_aim_deviation", "label": "Aim Deviation", "min": 0, "max": 45, "step": 0.5, "value": GameConfig.archer_aim_deviation},
 	])
 
@@ -163,18 +163,20 @@ func _on_slider_changed(value: float, param_name: String, value_label: Label) ->
 		"archer_damage":
 			GameConfig.archer_damage = value
 			_update_existing_units("archer", "damage", value)
+		"archer_speed":
+			GameConfig.archer_speed = value
+			_update_existing_units("archer", "speed", value)
 		"archer_attack_delay":
 			GameConfig.archer_attack_delay = value
 			_update_existing_units("archer", "attack_delay", value)
-		"archer_attack_range":
-			GameConfig.archer_attack_range = value
-			_update_existing_units("archer", "attack_range", value)
 		"archer_aim_deviation":
 			GameConfig.archer_aim_deviation = value
 		"projectile_speed":
 			GameConfig.projectile_speed = value
+			_update_archer_range()
 		"projectile_gravity":
 			GameConfig.projectile_gravity = value
+			_update_archer_range()
 		"hit_stagger_duration":
 			GameConfig.hit_stagger_duration = value
 
@@ -201,6 +203,14 @@ func _update_existing_units(unit_type: String, stat: String, value: float) -> vo
 					unit.attack_delay = value
 				"attack_range":
 					unit.attack_range = value
+
+func _update_archer_range() -> void:
+	# Update all existing archers' attack range based on new projectile physics
+	var new_range = GameConfig.get_projectile_max_range()
+	var units = get_tree().get_nodes_in_group("units")
+	for unit in units:
+		if unit is BaseUnit and unit.unit_type == "archer":
+			unit.attack_range = new_range
 
 func _update_battlefield_size() -> void:
 	var size_x = GameConfig.battlefield_size.x

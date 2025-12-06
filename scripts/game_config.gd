@@ -29,15 +29,15 @@ extends Node
 # UNIT STATS - ARCHER
 # =============================================================================
 @export var archer_hp: float = 50.0
+@export var archer_speed: float = 2.0
 @export var archer_damage: float = 20.0
 @export var archer_attack_delay: float = 2.0
-@export var archer_attack_range: float = 30.0  # Max shooting distance
 
 # =============================================================================
 # PROJECTILE
 # =============================================================================
 @export var projectile_speed: float = 22.0
-@export var projectile_gravity: float = 11.0
+@export var projectile_gravity: float = 10.0
 @export var projectile_despawn_delay: float = 2.5  # Seconds after hitting something
 @export_range(0.0, 45.0, 0.5) var archer_aim_deviation: float = 8.0  # Max random angle deviation in degrees (~30% miss rate)
 @export var hit_stagger_duration: float = 0.5  # Seconds unit is stunned after being hit by arrow
@@ -83,6 +83,11 @@ func get_unit_color(team: int, unit_type: String) -> Color:
 			"projectile": return team2_projectile_color
 	return Color.WHITE
 
+func get_projectile_max_range() -> float:
+	# Max range of a projectile at optimal 45° angle: range = v² / g
+	# We use 90% of theoretical max to account for height differences and practical aiming
+	return (projectile_speed * projectile_speed / projectile_gravity) * 0.5
+
 func get_unit_stats(unit_type: String) -> Dictionary:
 	match unit_type:
 		"footman":
@@ -106,10 +111,10 @@ func get_unit_stats(unit_type: String) -> Dictionary:
 		"archer":
 			return {
 				"hp": archer_hp,
-				"speed": 0.0,  # Archers don't move
+				"speed": archer_speed,
 				"damage": archer_damage,
 				"attack_delay": archer_attack_delay,
-				"attack_range": archer_attack_range,
+				"attack_range": get_projectile_max_range(),
 				"size": archer_size
 			}
 	return {}

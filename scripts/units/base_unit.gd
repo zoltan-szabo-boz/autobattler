@@ -88,6 +88,7 @@ func _physics_process(delta: float) -> void:
 
 	match state:
 		UnitState.IDLE:
+			velocity = Vector3.ZERO
 			_find_target()
 			if target:
 				state = UnitState.MOVING
@@ -196,6 +197,9 @@ func _move_towards_target(delta: float) -> void:
 		look_at(global_position + direction, Vector3.UP)
 
 func _attack_target() -> void:
+	# Not moving while attacking
+	velocity = Vector3.ZERO
+
 	if not is_instance_valid(target):
 		# Target died, find a new one immediately
 		target = null

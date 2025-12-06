@@ -10,12 +10,21 @@ func _ready() -> void:
 	spawn_button_2.pressed.connect(_on_spawn_button_2_pressed)
 	GameManager.score_changed.connect(_on_score_changed)
 
-func _unhandled_input(event: InputEvent) -> void:
-	# Keyboard shortcuts for quick testing
-	if event.is_action_pressed("ui_left"):
+	# Spawn initial units for both teams
+	_spawn_initial_units()
+
+func _spawn_initial_units() -> void:
+	for i in range(5):
 		GameManager.spawn_random_unit(1)
-	elif event.is_action_pressed("ui_right"):
 		GameManager.spawn_random_unit(2)
+
+func _unhandled_input(event: InputEvent) -> void:
+	# Keyboard shortcuts for quick testing (1 and 2 keys)
+	if event is InputEventKey and event.pressed and not event.echo:
+		if event.keycode == KEY_1:
+			GameManager.spawn_random_unit(1)
+		elif event.keycode == KEY_2:
+			GameManager.spawn_random_unit(2)
 
 func _on_spawn_button_1_pressed() -> void:
 	GameManager.spawn_random_unit(1)

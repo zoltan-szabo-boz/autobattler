@@ -102,18 +102,55 @@ func _on_body_entered(body: Node) -> void:
 
 	has_hit = true
 
-	# Damage any unit hit (friendly fire enabled)
-	if body is BaseUnit:
+	# Check what we hit
+	var hit_unit = body is BaseUnit
+
+	if hit_unit:
 		var unit = body as BaseUnit
 		# Pass shooter only if still valid, otherwise null
 		var valid_shooter = shooter if is_instance_valid(shooter) else null
 		unit.take_damage(damage, valid_shooter)
+		unit.apply_hit_stagger()
+		_attach_to_unit(unit)
+	else:
+		_start_ground_despawn()
 
-	_start_despawn()
-
-func _start_despawn() -> void:
+func _attach_to_unit(unit: BaseUnit) -> void:
 	freeze = true
+	# Remove from collision immediately
+	collision_layer = 0
+	collision_mask = 0
 
+	# Calculate offset from unit's position (in unit's local space)
+	var offset = global_position - unit.global_position
+	var unit_rotation = unit.global_transform.basis
+
+	# Store the local offset relative to unit's rotation
+	var local_offset = unit_rotation.inverse() * offset
+	var local_rotation = global_transform.basis
+
+	# Reparent to unit
+	var current_transform = global_transform
+	get_parent().remove_child(self)
+	unit.add_child(self)
+
+	# Set local position/rotation relative to unit
+	transform.origin = local_offset
+	transform.basis = unit_rotation.inverse() * local_rotation
+
+	# Connect to unit's death to clean up arrow
+	unit.unit_died.connect(_on_attached_unit_died)
+
+func _on_attached_unit_died(_unit: BaseUnit) -> void:
+	queue_free()
+
+func _start_ground_despawn() -> void:
+	freeze = true
+	# Remove from collision immediately so it doesn't block units
+	collision_layer = 0
+	collision_mask = 0
+
+	# Fade out
 	if mesh_instance and mesh_instance.material_override:
 		var material = mesh_instance.material_override as StandardMaterial3D
 		material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA

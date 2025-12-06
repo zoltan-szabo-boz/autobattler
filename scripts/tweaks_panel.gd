@@ -59,6 +59,7 @@ func _build_ui() -> void:
 	_add_section("Projectile", [
 		{"name": "projectile_speed", "label": "Speed", "min": 5, "max": 60, "step": 1, "value": GameConfig.projectile_speed},
 		{"name": "projectile_gravity", "label": "Gravity", "min": 1, "max": 30, "step": 0.5, "value": GameConfig.projectile_gravity},
+		{"name": "hit_stagger_duration", "label": "Hit Stagger", "min": 0, "max": 2, "step": 0.1, "value": GameConfig.hit_stagger_duration},
 	])
 
 func _add_section(title: String, params: Array) -> void:
@@ -174,6 +175,8 @@ func _on_slider_changed(value: float, param_name: String, value_label: Label) ->
 			GameConfig.projectile_speed = value
 		"projectile_gravity":
 			GameConfig.projectile_gravity = value
+		"hit_stagger_duration":
+			GameConfig.hit_stagger_duration = value
 
 func _update_unit_hp(unit_type: String, old_max: float, new_max: float) -> void:
 	# Scale existing units' HP proportionally

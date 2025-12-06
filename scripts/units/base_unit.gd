@@ -20,6 +20,7 @@ var attack_range: float
 var state: UnitState = UnitState.IDLE
 var target: BaseUnit = null
 var attack_timer: float = 0.0
+var stagger_timer: float = 0.0
 var mesh_instance: MeshInstance3D
 
 func _ready() -> void:
@@ -75,6 +76,12 @@ func _setup_collision() -> void:
 
 func _physics_process(delta: float) -> void:
 	attack_timer -= delta
+	stagger_timer -= delta
+
+	# If staggered, don't move
+	if stagger_timer > 0:
+		velocity = Vector3.ZERO
+		return
 
 	# Check for nearby enemies we're colliding with (melee engagement)
 	_check_collision_engagement()
@@ -88,6 +95,9 @@ func _physics_process(delta: float) -> void:
 			_move_towards_target(delta)
 		UnitState.ATTACKING:
 			_attack_target()
+
+func apply_hit_stagger() -> void:
+	stagger_timer = GameConfig.hit_stagger_duration
 
 func _check_collision_engagement() -> void:
 	# Skip for archers - they don't engage in melee

@@ -38,8 +38,9 @@ extends Node
 # =============================================================================
 @export var projectile_speed: float = 22.0
 @export var projectile_gravity: float = 11.0
-@export var projectile_despawn_delay: float = 1.5  # Seconds after hitting something
+@export var projectile_despawn_delay: float = 2.5  # Seconds after hitting something
 @export_range(0.0, 45.0, 0.5) var archer_aim_deviation: float = 8.0  # Max random angle deviation in degrees (~30% miss rate)
+@export var hit_stagger_duration: float = 0.5  # Seconds unit is stunned after being hit by arrow
 
 # =============================================================================
 # VISUAL - UNIT SIZES

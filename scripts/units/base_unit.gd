@@ -76,6 +76,9 @@ func _setup_collision() -> void:
 func _physics_process(delta: float) -> void:
 	attack_timer -= delta
 
+	# Check for nearby enemies we're colliding with (melee engagement)
+	_check_collision_engagement()
+
 	match state:
 		UnitState.IDLE:
 			_find_target()
@@ -85,6 +88,29 @@ func _physics_process(delta: float) -> void:
 			_move_towards_target(delta)
 		UnitState.ATTACKING:
 			_attack_target()
+
+func _check_collision_engagement() -> void:
+	# Skip for archers - they don't engage in melee
+	if unit_type == "archer":
+		return
+
+	# Check if current target is still valid and in range
+	if is_instance_valid(target) and global_position.distance_to(target.global_position) <= attack_range:
+		return  # Already engaged with valid target
+
+	# Look for enemies within melee range
+	var enemy_group = "team_2" if team == 1 else "team_1"
+	var enemies = get_tree().get_nodes_in_group(enemy_group)
+
+	for enemy in enemies:
+		if not is_instance_valid(enemy):
+			continue
+		var dist = global_position.distance_to(enemy.global_position)
+		if dist <= attack_range * 1.5:  # Slightly larger than attack range for collision detection
+			# Switch target to this nearby enemy
+			target = enemy
+			state = UnitState.ATTACKING
+			return
 
 func _find_target() -> void:
 	var enemy_group = "team_2" if team == 1 else "team_1"
@@ -146,21 +172,45 @@ func _move_towards_target(delta: float) -> void:
 	velocity = direction * speed
 	move_and_slide()
 
+	# Check if we collided with an enemy - if so, start attacking them
+	for i in get_slide_collision_count():
+		var collision = get_slide_collision(i)
+		var collider = collision.get_collider()
+		if collider is BaseUnit and collider.team != team:
+			target = collider
+			state = UnitState.ATTACKING
+			return
+
 	# Face target
 	if direction.length() > 0.01:
 		look_at(global_position + direction, Vector3.UP)
 
 func _attack_target() -> void:
 	if not is_instance_valid(target):
-		state = UnitState.IDLE
+		# Target died, find a new one immediately
 		target = null
+		_find_target()
+		if target:
+			state = UnitState.MOVING
+		else:
+			state = UnitState.IDLE
 		return
 
 	var dist = global_position.distance_to(target.global_position)
 
-	if dist > attack_range * 1.2:  # Small buffer to prevent jittering
+	# For melee units, use a more generous range check
+	# This accounts for collision boxes stopping units before centers are close
+	var effective_range = attack_range * 1.5 if unit_type != "archer" else attack_range * 1.2
+
+	if dist > effective_range:
 		state = UnitState.MOVING
 		return
+
+	# Face target while attacking
+	var direction = (target.global_position - global_position).normalized()
+	direction.y = 0
+	if direction.length() > 0.01:
+		look_at(global_position + direction, Vector3.UP)
 
 	if attack_timer <= 0:
 		_perform_attack()

@@ -9,10 +9,33 @@ func _ready() -> void:
 	projectile_scene = preload("res://scenes/projectile.tscn")
 	super._ready()
 
+var retarget_timer: float = 0.0
+const RETARGET_INTERVAL: float = 0.5  # Check for new targets every 0.5 seconds
+
+func _physics_process(delta: float) -> void:
+	retarget_timer -= delta
+	if retarget_timer <= 0:
+		retarget_timer = RETARGET_INTERVAL
+		_check_for_targets()
+	super._physics_process(delta)
+
+func _check_for_targets() -> void:
+	# If no target or target out of range, find a new one
+	if not is_instance_valid(target):
+		_find_target()
+	elif global_position.distance_to(target.global_position) > attack_range:
+		# Current target out of range, look for closer one
+		_find_target()
+
 func _move_towards_target(_delta: float) -> void:
-	# Archers don't move, go straight to attacking if we have a target
+	# Archers don't move, go straight to attacking if we have a target in range
 	if is_instance_valid(target):
-		state = UnitState.ATTACKING
+		var dist = global_position.distance_to(target.global_position)
+		if dist <= attack_range:
+			state = UnitState.ATTACKING
+		else:
+			# Target out of range, wait for something closer
+			state = UnitState.IDLE
 	else:
 		state = UnitState.IDLE
 

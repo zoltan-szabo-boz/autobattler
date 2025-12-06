@@ -14,7 +14,7 @@ func _ready() -> void:
 	_spawn_initial_units()
 
 func _spawn_initial_units() -> void:
-	for i in range(5):
+	for i in range(40):
 		GameManager.spawn_random_unit(1)
 		GameManager.spawn_random_unit(2)
 		#GameManager.spawn_unit("archer", 1)

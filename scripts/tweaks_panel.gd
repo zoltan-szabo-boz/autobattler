@@ -12,6 +12,7 @@ func _ready() -> void:
 	toggle_button.pressed.connect(_on_toggle_pressed)
 	_build_ui()
 	_update_collapsed_state()
+	_update_battlefield_size()
 
 func _on_toggle_pressed() -> void:
 	is_collapsed = !is_collapsed

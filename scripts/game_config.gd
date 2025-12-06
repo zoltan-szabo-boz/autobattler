@@ -4,7 +4,7 @@ extends Node
 # =============================================================================
 # BATTLEFIELD
 # =============================================================================
-@export var battlefield_size: Vector2 = Vector2(40.0, 40.0)
+@export var battlefield_size: Vector2 = Vector2(80.0, 40.0)
 @export var spawn_margin: float = 2.0  # Distance from edge where units spawn
 
 # =============================================================================

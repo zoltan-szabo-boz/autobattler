@@ -152,18 +152,39 @@ func _get_closest_enemy(enemies: Array) -> BaseUnit:
 	return closest
 
 func _get_farthest_enemy(enemies: Array) -> BaseUnit:
-	var farthest: BaseUnit = null
-	var farthest_dist: float = -INF
+	# Get the "rearmost" enemy - furthest from frontline (closest to their spawn edge)
+	# For team 1 enemies (spawning at -X), rearmost means most negative X
+	# For team 2 enemies (spawning at +X), rearmost means most positive X
+
+	var rearmost: BaseUnit = null
+	var rearmost_score: float = -INF
+	var half_size_x = GameConfig.battlefield_size.x / 2.0
 
 	for enemy in enemies:
 		if not is_instance_valid(enemy):
 			continue
-		var dist = global_position.distance_to(enemy.global_position)
-		if dist > farthest_dist:
-			farthest_dist = dist
-			farthest = enemy
 
-	return farthest
+		# Calculate how "rear" this enemy is (distance from frontline toward their spawn)
+		var rear_score: float
+		if enemy.team == 1:
+			# Team 1 spawns at -X, so more negative X = more rear
+			rear_score = -enemy.global_position.x
+		else:
+			# Team 2 spawns at +X, so more positive X = more rear
+			rear_score = enemy.global_position.x
+
+		# If this enemy is more rear than current best, or roughly equal but closer to us
+		if rear_score > rearmost_score + 1.0:
+			# Clearly more rear
+			rearmost_score = rear_score
+			rearmost = enemy
+		elif rear_score > rearmost_score - 1.0:
+			# Within 1 unit of same "rearness", pick closer one
+			if rearmost == null or global_position.distance_to(enemy.global_position) < global_position.distance_to(rearmost.global_position):
+				rearmost_score = rear_score
+				rearmost = enemy
+
+	return rearmost
 
 func _move_towards_target(delta: float) -> void:
 	if not is_instance_valid(target):

@@ -62,8 +62,14 @@ func _perform_attack() -> void:
 
 	# Check if a friendly unit is in the way of the shot
 	if _would_hit_friendly(spawn_pos, predicted_pos):
-		# Don't shoot - friendly in the way
-		return
+		# Try to find an alternative target
+		var alt_target = _find_clear_target(spawn_pos)
+		if alt_target:
+			target = alt_target
+			predicted_pos = _predict_target_position(spawn_pos)
+		else:
+			# No valid target, don't shoot
+			return
 
 	var projectile = projectile_scene.instantiate() as Projectile
 	projectile.team = team
@@ -77,6 +83,38 @@ func _perform_attack() -> void:
 	projectiles_container.add_child(projectile)
 	projectile.global_position = spawn_pos
 	projectile.launch_at_target(spawn_pos, aim_pos)
+
+func _find_clear_target(spawn_pos: Vector3) -> BaseUnit:
+	# Find an enemy we can shoot without hitting friendlies
+	var enemy_group = "team_2" if team == 1 else "team_1"
+	var enemies = get_tree().get_nodes_in_group(enemy_group)
+
+	var best_target: BaseUnit = null
+	var best_dist: float = INF
+
+	for enemy in enemies:
+		if not is_instance_valid(enemy):
+			continue
+		if enemy == target:
+			# Already checked this one
+			continue
+
+		var dist = global_position.distance_to(enemy.global_position)
+		if dist > attack_range:
+			continue
+
+		var enemy_predicted_pos = enemy.global_position + Vector3.UP * 0.5
+		if enemy is CharacterBody3D and enemy.velocity.length() > 0.1:
+			# Simple prediction for moving targets
+			var flight_time = dist / GameConfig.projectile_speed
+			enemy_predicted_pos += Vector3(enemy.velocity.x * flight_time, 0, enemy.velocity.z * flight_time)
+
+		if not _would_hit_friendly(spawn_pos, enemy_predicted_pos):
+			if dist < best_dist:
+				best_dist = dist
+				best_target = enemy
+
+	return best_target
 
 func _predict_target_position(spawn_pos: Vector3) -> Vector3:
 	var target_pos = target.global_position + Vector3.UP * 0.5

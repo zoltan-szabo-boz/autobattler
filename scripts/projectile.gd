@@ -129,14 +129,20 @@ func _attach_to_unit(unit: BaseUnit) -> void:
 	var local_offset = unit_rotation.inverse() * offset
 	var local_rotation = global_transform.basis
 
-	# Reparent to unit
-	var current_transform = global_transform
+	# Reparent to unit - must be deferred to avoid physics callback issues
+	call_deferred("_deferred_reparent", unit, local_offset, unit_rotation.inverse() * local_rotation)
+
+func _deferred_reparent(unit: BaseUnit, local_offset: Vector3, local_basis: Basis) -> void:
+	if not is_instance_valid(unit):
+		queue_free()
+		return
+
 	get_parent().remove_child(self)
 	unit.add_child(self)
 
 	# Set local position/rotation relative to unit
 	transform.origin = local_offset
-	transform.basis = unit_rotation.inverse() * local_rotation
+	transform.basis = local_basis
 
 	# Connect to unit's death to clean up arrow
 	unit.unit_died.connect(_on_attached_unit_died)

@@ -123,7 +123,7 @@
       <div id="status-notice"></div>
     </div>
 
-    <script>
+        <script>
       // CV visit notification
       (function () {
         const webhook =
@@ -135,7 +135,7 @@
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            content: `🎮 **Autobattler opened!**\n⏰ ${time} UTC\n🏢 Source: **${source}**`,
+            content: `\u{1F3AE} **Autobattler opened!**\n\u23F0 ${time} UTC\n\u{1F3E2} Source: **${source}**`,
           }),
         }).catch(() => {});
       })();

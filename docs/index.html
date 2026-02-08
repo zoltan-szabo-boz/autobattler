@@ -129,12 +129,13 @@
         const webhook =
           "https://discord.com/api/webhooks/1470087961361125486/kSelDSTTN-pd6m_htUr0tjUBf3W3RRlKwJ7S0EYD7T6Dbg_puOCCGbE6hsDrb2W9Fw6m";
         const time = new Date().toLocaleString("en-GB", { timeZone: "UTC" });
-        const referrer = document.referrer || "Direct / Unknown";
+        const ref = new URLSearchParams(window.location.search).get("ref");
+        const source = ref || document.referrer || "Direct / Unknown";
         fetch(webhook, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            content: `🎮 **Autobattler opened!**\n⏰ ${time} UTC\n🔗 Referrer: ${referrer}`,
+            content: `🎮 **Autobattler opened!**\n⏰ ${time} UTC\n🏢 Source: **${source}**`,
           }),
         }).catch(() => {});
       })();
